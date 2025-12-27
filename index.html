@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pretty Searcher</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef4ff;
+      padding: 20px;
+    }
+
+    h2 {
+      color: #1e3a8a;
+      margin-bottom: 12px;
+    }
+
+    input, select {
+      padding: 8px;
+      margin: 5px;
+      border: 1px solid #93c5fd;
+      border-radius: 6px;
+    }
+
+    button {
+      padding: 8px 14px;
+      margin: 5px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    #output {
+      margin-top: 20px;
+    }
+
+    .card {
+      background: white;
+      border-left: 5px solid #2563eb;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 8px rgba(37,99,235,0.15);
+    }
+
+    h3 {
+      color: #1e40af;
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>💙 Pretty Searcher</h2>
+
+<!-- SEARCH & FILTERS -->
+<input type="text" id="search" placeholder="Search title, author, genre, vibe">
+
+<select id="spice">
+  <option value="">Any Spice</option>
+  <option value="Low">Low</option>
+  <option value="Medium">Medium</option>
+  <option value="High">High</option>
+</select>
+
+<select id="pov">
+  <option value="">Any POV</option>
+  <option value="Dual">Dual</option>
+  <option value="Single">Single</option>
+</select>
+
+<button onclick="searchBooks()">Search</button>
+
+<hr>
+
+<div id="output"></div>
+
+<script>
+const API_URL =
+  "https://opensheet.elk.sh/1P2VYzz30FKjriq3jI1skMEc-gCoPIvufz0hbj7BfsSc/books_dataset";
+
+async function searchBooks() {
+  const keyword = document.getElementById("search").value.toLowerCase();
+  const spice = document.getElementById("spice").value.toLowerCase();
+  const pov = document.getElementById("pov").value.toLowerCase();
+
+  const res = await fetch(API_URL);
+  const data = await res.json();
+
+  const results = data.filter(book => {
+    const text = (
+      (book.title || "") + " " +
+      (book.author || "") + " " +
+      (book.genre || "") + " " +
+      (book.tropes || "") + " " +
+      (book.vibe_tags || "")
+    ).toLowerCase();
+
+    const spiceText = (book.spice_level || "").toLowerCase();
+    const povText = (book.pov || "").toLowerCase();
+
+    return (
+      (keyword === "" || text.includes(keyword)) &&
+      (spice === "" || spiceText.includes(spice)) &&
+      (pov === "" || povText.includes(pov))
+    );
+  });
+
+  let html = "";
+
+  if (results.length === 0) {
+    html = "<p>No books found.</p>";
+  }
+
+  results.forEach(book => {
+    html += `
+      <div class="card">
+        <h3>${book.title}</h3>
+        <p><b>Author:</b> ${book.author}</p>
+        <p><b>Genre:</b> ${book.genre}</p>
+        <p><b>Spice:</b> ${book.spice_level}</p>
+        <p><b>POV:</b> ${book.pov}</p>
+        <p><b>Summary:</b> ${book.summary}</p>
+      </div>
+    `;
+  });
+
+  document.getElementById("output").innerHTML = html;
+}
+</script>
+
+</body>
+</html>
